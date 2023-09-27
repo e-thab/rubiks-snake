@@ -1,12 +1,54 @@
-[gd_scene load_steps=3 format=3 uid="uid://c7sdva1cjepe8"]
+[gd_scene load_steps=7 format=3 uid="uid://c7sdva1cjepe8"]
 
+[ext_resource type="Script" path="res://Main.gd" id="1_8r0ai"]
 [ext_resource type="PackedScene" uid="uid://bmx33dxu7syyw" path="res://resources/wedge_1-bevel.glb" id="1_jx3sk"]
 [ext_resource type="PackedScene" uid="uid://b1r8beob8b6hw" path="res://resources/wedge_2-bevel.glb" id="2_dvwuw"]
+[ext_resource type="PackedScene" uid="uid://b68lpbjl6uf2c" path="res://Wedge.tscn" id="2_tofjc"]
+
+[sub_resource type="Environment" id="Environment_pp62p"]
+background_mode = 2
+background_color = Color(0.266667, 0.266667, 0.266667, 1)
+ambient_light_color = Color(1, 1, 1, 1)
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_x51v4"]
 
 [node name="Main" type="Node3D"]
+script = ExtResource("1_8r0ai")
 
-[node name="wedge_1-bevel" parent="." instance=ExtResource("1_jx3sk")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.328352, 0, 1.62827)
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_pp62p")
+camera_attributes = SubResource("CameraAttributesPractical_x51v4")
 
-[node name="wedge_2-bevel" parent="." instance=ExtResource("2_dvwuw")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.319822, 0, -1.66907)
+[node name="CameraSpatial" type="Node3D" parent="."]
+transform = Transform3D(-0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, 0.5, -0.5, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraSpatial"]
+transform = Transform3D(1, 0, 8.9407e-08, 0, 1, 1.04308e-07, 0, -1.49012e-08, 1, 0, 2.38419e-07, 8)
+
+[node name="Wedge" parent="." instance=ExtResource("2_tofjc")]
+
+[node name="VisualWedges" type="Node" parent="."]
+
+[node name="wedge_1-bevel" parent="VisualWedges" instance=ExtResource("1_jx3sk")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -8, 0, -9)
+visible = false
+
+[node name="wedge_2-bevel" parent="VisualWedges" instance=ExtResource("2_dvwuw")]
+transform = Transform3D(-0.5, 4.37114e-08, 4.37114e-08, -4.37114e-08, -0.5, 4.37114e-08, 4.37114e-08, 4.37114e-08, 0.5, -9, 0, -9)
+visible = false
+
+[node name="wedge_1-bevel2" parent="VisualWedges" instance=ExtResource("1_jx3sk")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -9, 1, -9)
+visible = false
+
+[node name="wedge_2-bevel2" parent="VisualWedges" instance=ExtResource("2_dvwuw")]
+transform = Transform3D(-0.5, 4.37114e-08, 4.37114e-08, -4.37114e-08, -0.5, 4.37114e-08, 4.37114e-08, 4.37114e-08, 0.5, -10, 1, -9)
+visible = false
+
+[node name="wedge_1-bevel3" parent="VisualWedges" instance=ExtResource("1_jx3sk")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -7, -1, -9)
+visible = false
+
+[node name="wedge_2-bevel3" parent="VisualWedges" instance=ExtResource("2_dvwuw")]
+transform = Transform3D(-0.5, 4.37114e-08, 4.37114e-08, -4.37114e-08, -0.5, 4.37114e-08, 4.37114e-08, 4.37114e-08, 0.5, -8, -1, -9)
+visible = false
