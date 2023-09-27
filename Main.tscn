@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://c7sdva1cjepe8"]
+
+[ext_resource type="PackedScene" uid="uid://bmx33dxu7syyw" path="res://resources/wedge_1-bevel.glb" id="1_jx3sk"]
+[ext_resource type="PackedScene" uid="uid://b1r8beob8b6hw" path="res://resources/wedge_2-bevel.glb" id="2_dvwuw"]
+
+[node name="Main" type="Node3D"]
+
+[node name="wedge_1-bevel" parent="." instance=ExtResource("1_jx3sk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.328352, 0, 1.62827)
+
+[node name="wedge_2-bevel" parent="." instance=ExtResource("2_dvwuw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.319822, 0, -1.66907)
