@@ -1,11 +1,22 @@
 @tool
 extends Node3D
 
+signal wedge_rotate
+
 @export var color: Globals.WedgeColor
 var current_color: Globals.WedgeColor
 var mesh: MeshInstance3D
-var rot = 0
+#var rot = 0
+var rot_speed = 1.0
 var hovering = false
+var index
+
+var rotating = false
+var rot_deg = 0.0
+var rot_dir: Globals.WedgeRotation
+var rot_goal = 0.0
+var rot_start = 0.0
+var rot_prog = 0.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -19,11 +30,24 @@ func _process(delta):
 			set_color(color)
 			current_color = color
 	else:
-		if hovering:
+		if hovering and not rotating:
 			if Input.is_action_just_pressed("rotate_clockwise"):
-				print('rotate cl')
+				emit_signal("wedge_rotate", index, Globals.WedgeRotation.CLOCKWISE)
 			elif Input.is_action_just_pressed("rotate_counter_clockwise"):
-				print('rotate cc')
+				emit_signal("wedge_rotate", index, Globals.WedgeRotation.COUNTER_CLOCKWISE)
+
+
+func _physics_process(delta):
+	if rotating:
+		rotation_degrees.x = lerp(rot_start, rot_goal, rot_prog)
+		rot_prog += delta * rot_speed
+
+		if abs(rotation_degrees.x - rot_goal) < 0.5:
+			rotation_degrees.x = rot_goal
+			rotating = false
+			rot_prog = 0.0
+		
+		print(rotation_degrees.x)
 
 
 func set_color(color):
@@ -37,10 +61,35 @@ func set_color(color):
 			mesh.set_surface_override_material(1, null)
 
 
+func rotate_wedge(dir: Globals.WedgeRotation):
+	match dir:
+		Globals.WedgeRotation.CLOCKWISE:
+			print('rotating wedge %s clockwise' % index)
+			#rotation_degrees.x -= 90.0
+		Globals.WedgeRotation.COUNTER_CLOCKWISE:
+			print('rotating wedge %s counter clockwise' % index)
+			#rotation_degrees.x += 90.0
+	
+	rotating = true
+	rot_dir = dir
+	rot_start = rotation_degrees.x
+	rot_goal = get_rotation_goal(dir)
+	print('goal: ', rot_goal)
+
+
+func get_rotation_goal(dir: Globals.WedgeRotation):
+	var r = rotation_degrees.x
+	match dir:
+		Globals.WedgeRotation.CLOCKWISE:
+			return (int(r/90)-1) * 90.0
+		Globals.WedgeRotation.COUNTER_CLOCKWISE:
+			return (int(r/90)+1) * 90.0
+
+
 func _on_area_3d_mouse_entered():
 	hovering = true
 	$Mesh/Highlight.show()
-	print(position)
+	#print(position)
 
 func _on_area_3d_mouse_exited():
 	hovering = false

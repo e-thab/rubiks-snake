@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://b68lpbjl6uf2c"]
+[gd_scene load_steps=10 format=3 uid="uid://b68lpbjl6uf2c"]
 
 [ext_resource type="Script" path="res://Wedge.gd" id="1_fqyks"]
 [ext_resource type="Material" uid="uid://ehx6sqs8is28" path="res://resources/mat_white.tres" id="2_b2de7"]
+[ext_resource type="Texture2D" uid="uid://l7ry8x4nywnd" path="res://resources/arrow1.svg" id="2_oahuw"]
 [ext_resource type="Material" uid="uid://cpyc57yw71f05" path="res://resources/mat_orange.tres" id="3_xbju4"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_ejque"]
@@ -79,6 +80,22 @@ points = PackedVector3Array(0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -
 
 [node name="Wedge" type="Node3D"]
 script = ExtResource("1_fqyks")
+
+[node name="Sprites" type="Node3D" parent="."]
+visible = false
+
+[node name="Indicator_CW" type="Sprite3D" parent="Sprites"]
+transform = Transform3D(0.612372, -0.353553, 0.707107, -0.612372, 0.353553, 0.707107, -0.5, -0.866025, -3.09086e-08, -0.375, 0.38, -0.275)
+modulate = Color(0.372549, 0.427451, 0.831373, 1)
+pixel_size = 0.0002
+texture = ExtResource("2_oahuw")
+
+[node name="Indicator_CCW" type="Sprite3D" parent="Sprites"]
+transform = Transform3D(-0.612372, -0.353553, 0.707107, 0.612372, 0.353553, 0.707107, -0.5, 0.866025, -3.09086e-08, -0.375, 0.38, 0.275)
+flip_h = true
+modulate = Color(0.662745, 0.156863, 0.466667, 1)
+pixel_size = 0.0002
+texture = ExtResource("2_oahuw")
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
