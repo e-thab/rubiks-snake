@@ -6,14 +6,15 @@ signal wedge_rotate
 @export var color: Globals.WedgeColor
 var current_color: Globals.WedgeColor
 var mesh: MeshInstance3D
-#var rot = 0
 var rot_speed = 1.0
 var hovering = false
+var turns = 0
 var index
 
+
 var rotating = false
-var rot_deg = 0.0
 var rot_dir: Globals.WedgeRotation
+var rot_deg = 0.0
 var rot_goal = 0.0
 var rot_start = 0.0
 var rot_prog = 0.0
@@ -39,15 +40,13 @@ func _process(delta):
 
 func _physics_process(delta):
 	if rotating:
-		rotation_degrees.x = lerp(rot_start, rot_goal, rot_prog)
+		rotation_degrees.x = lerp(rotation_degrees.x, rot_goal, rot_prog)
 		rot_prog += delta * rot_speed
-
+		
 		if abs(rotation_degrees.x - rot_goal) < 0.5:
 			rotation_degrees.x = rot_goal
 			rotating = false
 			rot_prog = 0.0
-		
-		print(rotation_degrees.x)
 
 
 func set_color(color):
@@ -64,17 +63,20 @@ func set_color(color):
 func rotate_wedge(dir: Globals.WedgeRotation):
 	match dir:
 		Globals.WedgeRotation.CLOCKWISE:
-			print('rotating wedge %s clockwise' % index)
-			#rotation_degrees.x -= 90.0
+			#print('rotating wedge %s clockwise' % index)
+			if turns == 0:
+				turns = 3
+			else:
+				turns -= 1
+			
 		Globals.WedgeRotation.COUNTER_CLOCKWISE:
-			print('rotating wedge %s counter clockwise' % index)
-			#rotation_degrees.x += 90.0
+			#print('rotating wedge %s counter clockwise' % index)
+			turns = (turns + 1) % 4
 	
 	rotating = true
 	rot_dir = dir
 	rot_start = rotation_degrees.x
 	rot_goal = get_rotation_goal(dir)
-	print('goal: ', rot_goal)
 
 
 func get_rotation_goal(dir: Globals.WedgeRotation):
@@ -89,7 +91,6 @@ func get_rotation_goal(dir: Globals.WedgeRotation):
 func _on_area_3d_mouse_entered():
 	hovering = true
 	$Mesh/Highlight.show()
-	#print(position)
 
 func _on_area_3d_mouse_exited():
 	hovering = false

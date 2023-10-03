@@ -15,7 +15,7 @@ var rot_sensitivity = 1.0
 var zoom_sensitivity = 0.5
 var SENS_MULTI = 0.01	# Pan and rotate need small numbers. this allows sensible, human-readable options
 
-var rotation_speed = 1.5	# How quickly wedges rotate
+var rotation_speed = 1	# How quickly wedges rotate
 var wedges = []
 
 
@@ -59,7 +59,6 @@ func _input(event):
 
 
 func instantiate_wedges(n):
-	#var pos = Vector3.ZERO
 	var previous_wedge
 	var pos = Vector3(-1, 0, 0)
 	
@@ -81,16 +80,20 @@ func instantiate_wedges(n):
 		
 		if i % 2 == 0:
 			wedge.set_color(Globals.WedgeColor.WHITE)
-			#pos.x -= 1
 		else:
 			wedge.set_color(Globals.WedgeColor.ORANGE)
-			#wedge.rotation_degrees.z = -180
-			#pos.y += 1
 		
 		if previous_wedge:
 			wedge.rotation_degrees.y = 180.0
 			wedge.rotation_degrees.z = -90.0
 		previous_wedge = wedge
+
+
+func wedge_list():
+	var wedge_turns = []
+	for wedge in wedges:
+		wedge_turns.append(wedge.turns)
+	return wedge_turns
 
 
 func set_cam_orthogonal(ortho):
@@ -117,9 +120,10 @@ func zoom_out():
 			camera.translate(camera.basis.z.normalized() * zoom_sensitivity)
 
 func reset_cam():
-	camera_spatial.position = Vector3.ZERO
+	camera_spatial.position = initial_cam_pos
 	camera_spatial.rotation = initial_cam_rot
 	camera.position.z = 8.0
 
 func _on_wedge_rotate(i, dir: Globals.WedgeRotation):
 	wedges[i].rotate_wedge(dir)
+	print(wedge_list())
