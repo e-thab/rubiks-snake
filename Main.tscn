@@ -25,7 +25,6 @@ transform = Transform3D(-0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, 
 
 [node name="Camera3D" type="Camera3D" parent="CameraSpatial"]
 transform = Transform3D(1, 0, 8.9407e-08, 0, 1, 1.04308e-07, 0, -1.49012e-08, 1, 0, 2.38419e-07, 8)
-projection = 1
 
 [node name="UI" type="Control" parent="."]
 layout_mode = 3
@@ -34,6 +33,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("2_0756r")
 
 [node name="MarginContainer" type="MarginContainer" parent="UI"]
@@ -42,6 +42,7 @@ anchors_preset = 9
 anchor_bottom = 1.0
 offset_right = 163.0
 grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
@@ -49,19 +50,23 @@ theme_override_constants/margin_bottom = 12
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/MarginContainer"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 6
 
 [node name="HSeparator" type="HSeparator" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
+mouse_filter = 2
 
-[node name="Label2" type="Label" parent="UI/MarginContainer/VBoxContainer"]
+[node name="ShapeHeader" type="Label" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Shape"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="WedgeCountContainer" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 8
 alignment = 1
 
@@ -71,20 +76,71 @@ text = "Wedges"
 
 [node name="WedgeCountEdit" type="LineEdit" parent="UI/MarginContainer/VBoxContainer/WedgeCountContainer"]
 layout_mode = 2
-placeholder_text = "####"
+text = "24"
+placeholder_text = "###"
 alignment = 1
-max_length = 4
-context_menu_enabled = false
+max_length = 3
 deselect_on_focus_loss_enabled = false
+
+[node name="AnimationContainer" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer/AnimationContainer"]
+layout_mode = 2
+text = "Animate Rotations"
+
+[node name="AnimateButton" type="CheckButton" parent="UI/MarginContainer/VBoxContainer/AnimationContainer"]
+layout_mode = 2
+button_pressed = true
+
+[node name="RotSpeedContainer" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer/RotSpeedContainer"]
+layout_mode = 2
+text = "Speed"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RotSpeedSlider" type="HSlider" parent="UI/MarginContainer/VBoxContainer/RotSpeedContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.1
+max_value = 5.0
+step = 0.1
+value = 1.0
+
+[node name="ValueLabel" type="Label" parent="UI/MarginContainer/VBoxContainer/RotSpeedContainer"]
+layout_mode = 2
+text = "1.0"
+vertical_alignment = 1
 
 [node name="HSeparator2" type="HSeparator" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer"]
+[node name="CameraHeader" type="Label" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Camera"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="FollowContainer" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer/FollowContainer"]
+layout_mode = 2
+text = "Orbit Avg Center"
+vertical_alignment = 1
+
+[node name="CamFollowButton" type="CheckButton" parent="UI/MarginContainer/VBoxContainer/FollowContainer"]
+layout_mode = 2
+button_pressed = true
 
 [node name="CamModeContainer" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -93,7 +149,7 @@ alignment = 1
 
 [node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer/CamModeContainer"]
 layout_mode = 2
-text = "Mode"
+text = "Projection"
 vertical_alignment = 1
 
 [node name="CamModeButton" type="OptionButton" parent="UI/MarginContainer/VBoxContainer/CamModeContainer"]
@@ -106,20 +162,6 @@ popup/item_0/id = 0
 popup/item_1/text = "Orthogonal"
 popup/item_1/id = 1
 
-[node name="FollowContainer" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer/FollowContainer"]
-layout_mode = 2
-text = "Orbit Avg Center"
-vertical_alignment = 1
-
-[node name="CamFollowButton" type="CheckBox" parent="UI/MarginContainer/VBoxContainer/FollowContainer"]
-layout_mode = 2
-button_pressed = true
-
 [node name="ResetCamButton" type="Button" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Reset Camera"
@@ -129,7 +171,10 @@ layout_mode = 2
 
 [connection signal="text_changed" from="UI/MarginContainer/VBoxContainer/WedgeCountContainer/WedgeCountEdit" to="UI" method="_on_wedge_count_edit_text_changed"]
 [connection signal="text_submitted" from="UI/MarginContainer/VBoxContainer/WedgeCountContainer/WedgeCountEdit" to="." method="_on_wedge_count_edit_text_submitted"]
-[connection signal="text_submitted" from="UI/MarginContainer/VBoxContainer/WedgeCountContainer/WedgeCountEdit" to="UI" method="_on_wedge_count_edit_text_submitted"]
-[connection signal="item_selected" from="UI/MarginContainer/VBoxContainer/CamModeContainer/CamModeButton" to="." method="_on_cam_mode_button_item_selected"]
+[connection signal="toggled" from="UI/MarginContainer/VBoxContainer/AnimationContainer/AnimateButton" to="." method="_on_animate_button_toggled"]
+[connection signal="toggled" from="UI/MarginContainer/VBoxContainer/AnimationContainer/AnimateButton" to="UI" method="_on_animate_button_toggled"]
+[connection signal="value_changed" from="UI/MarginContainer/VBoxContainer/RotSpeedContainer/RotSpeedSlider" to="." method="_on_rot_speed_slider_value_changed"]
+[connection signal="value_changed" from="UI/MarginContainer/VBoxContainer/RotSpeedContainer/RotSpeedSlider" to="UI" method="_on_speed_slider_value_changed"]
 [connection signal="toggled" from="UI/MarginContainer/VBoxContainer/FollowContainer/CamFollowButton" to="." method="_on_cam_follow_button_toggled"]
+[connection signal="item_selected" from="UI/MarginContainer/VBoxContainer/CamModeContainer/CamModeButton" to="." method="_on_cam_mode_button_item_selected"]
 [connection signal="pressed" from="UI/MarginContainer/VBoxContainer/ResetCamButton" to="." method="_on_reset_cam_button_pressed"]

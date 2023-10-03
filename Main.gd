@@ -5,6 +5,7 @@ extends Node3D
 
 var camera: Camera3D
 var camera_spatial: Node3D
+var ui = UI
 var cam_rotating = false
 var cam_panning = false
 var cam_following = true
@@ -14,15 +15,15 @@ var initial_cam_pos
 var pan_sensitivity = 1.0
 var rot_sensitivity = 1.0
 var zoom_sensitivity = 0.5
-var SENS_MULTI = 0.01	# Pan and rotate need small numbers. This maps the values to a sensible range
+var SENS_MULTI = 0.01	# Pan and rotate need small numbers. This maps the values to a more readable range
 
-var rotation_speed = 1	# How quickly wedges rotate
 var wedges = []
 var last_wedge
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	ui = $UI
 	camera = $CameraSpatial/Camera3D
 	camera_spatial = $CameraSpatial
 	set_cam_orthogonal(cam_orthogonal)
@@ -44,7 +45,7 @@ func _physics_process(delta):
 		camera_spatial.set_position(get_center())
 
 
-func _input(event):
+func _unhandled_input(event):	
 	if event.is_action("cam_pan"):
 		cam_panning = event.is_pressed()
 	if event.is_action("cam_rotate"):
@@ -55,7 +56,7 @@ func _input(event):
 		zoom_out()
 	if event.is_action("cam_reset"):
 		reset_cam()
-	
+
 	if event is InputEventMouseMotion:
 		if cam_panning and not cam_following:
 			var mvmt = Vector3(-event.relative.x, event.relative.y, 0.0) * pan_sensitivity * SENS_MULTI
@@ -64,6 +65,8 @@ func _input(event):
 			camera_spatial.rotation.y -= event.relative.x * rot_sensitivity * SENS_MULTI
 			camera_spatial.rotation.x -= event.relative.y * rot_sensitivity * SENS_MULTI
 			camera_spatial.rotation.x = clamp(camera_spatial.rotation.x, -PI/2.0, PI/2.0)
+	#else:
+		#print(event)
 
 
 func instantiate_initial_wedge():
@@ -71,11 +74,8 @@ func instantiate_initial_wedge():
 	var wedge = scene.instantiate()
 	add_child(wedge)
 	wedges.append(wedge)
-	wedge.index = 0
-	last_wedge = wedge
-	wedge.rot_speed = rotation_speed
 	wedge.connect("wedge_rotate", _on_wedge_rotate)
-	wedge.set_color(Globals.WedgeColor.WHITE)
+	last_wedge = wedge
 
 
 func instantiate_wedges(n):
@@ -88,7 +88,6 @@ func instantiate_wedges(n):
 		wedge.set_position(offset)
 		wedges.append(wedge)
 		wedge.index = last_wedge.index + 1
-		wedge.rot_speed = rotation_speed
 		wedge.connect("wedge_rotate", _on_wedge_rotate)
 		wedge.rotation_degrees.y = 180.0
 		wedge.rotation_degrees.z = -90.0
@@ -104,7 +103,6 @@ func instantiate_wedges(n):
 func set_wedge_count(n):
 	if n == wedge_count:
 		return
-	
 	elif n < wedge_count:
 		wedges[n].queue_free()
 		var kept_wedges = []
@@ -112,7 +110,6 @@ func set_wedge_count(n):
 			kept_wedges.append(wedges[i])
 		wedges = kept_wedges
 		last_wedge = wedges[-1]
-	
 	elif n > wedge_count:
 		instantiate_wedges(n - wedge_count)
 	
@@ -209,3 +206,12 @@ func _on_wedge_count_edit_text_submitted(new_text):
 	var n = int(new_text)
 	if n > 0:
 		set_wedge_count(n)
+
+
+func _on_rot_speed_slider_value_changed(value):
+	Globals.set_rotation_speed(value)
+
+
+func _on_animate_button_toggled(button_pressed):
+	for wedge in wedges:
+		Globals.animated = button_pressed

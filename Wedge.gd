@@ -6,11 +6,9 @@ signal wedge_rotate
 @export var color: Globals.WedgeColor
 var current_color: Globals.WedgeColor
 var mesh: MeshInstance3D
-var rot_speed = 1.0
 var hovering = false
 var turns = 0
-var index
-
+var index = 0
 
 var rotating = false
 var rot_dir: Globals.WedgeRotation
@@ -44,19 +42,24 @@ func _process(delta):
 
 
 func _physics_process(delta):
-	if rotating:
+	if Globals.animated and rotating:
 		rotation_degrees.x = lerp(rotation_degrees.x, rot_goal, rot_prog)
-		rot_prog += delta * rot_speed
+		rot_prog += delta * Globals.rotation_speed
 		
-		if abs(rotation_degrees.x - rot_goal) < 0.5:
+		var tolerance = 0.5 * Globals.rotation_speed
+		if abs(rotation_degrees.x - rot_goal) < tolerance:
 			rotation_degrees.x = rot_goal
-			rotating = false
 			rot_prog = 0.0
+			rotating = false
+	elif rotating:
+		rotation_degrees.x = rot_goal
+		rot_prog = 0.0
+		rotating = false
 
 
-func set_color(color):
+func set_color(col):
 	# Sets the 'primary' color of the wedge. White means white prism with orange sticker.
-	match color:
+	match col:
 		Globals.WedgeColor.ORANGE:
 			mesh.set_surface_override_material(0, load("res://resources/mat_orange.tres"))
 			mesh.set_surface_override_material(1, load("res://resources/mat_white.tres"))
