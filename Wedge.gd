@@ -36,6 +36,11 @@ func _process(delta):
 				emit_signal("wedge_rotate", index, Globals.WedgeRotation.CLOCKWISE)
 			elif Input.is_action_just_pressed("rotate_counter_clockwise"):
 				emit_signal("wedge_rotate", index, Globals.WedgeRotation.COUNTER_CLOCKWISE)
+		
+		if hovering:
+			if Input.is_action_just_pressed("select"):
+				# set cam orbit around selected wedge
+				print('select')
 
 
 func _physics_process(delta):

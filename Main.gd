@@ -7,16 +7,18 @@ var camera: Camera3D
 var camera_spatial: Node3D
 var cam_rotating = false
 var cam_panning = false
+var cam_following = true
 var initial_cam_rot
 var initial_cam_pos
 
 var pan_sensitivity = 1.0
 var rot_sensitivity = 1.0
 var zoom_sensitivity = 0.5
-var SENS_MULTI = 0.01	# Pan and rotate need small numbers. this allows sensible, human-readable options
+var SENS_MULTI = 0.01	# Pan and rotate need small numbers. This maps the values to a sensible range
 
 var rotation_speed = 1	# How quickly wedges rotate
 var wedges = []
+var last_wedge
 
 
 # Called when the node enters the scene tree for the first time.
@@ -24,7 +26,8 @@ func _ready():
 	camera = $CameraSpatial/Camera3D
 	camera_spatial = $CameraSpatial
 	set_cam_orthogonal(cam_orthogonal)
-	instantiate_wedges(wedge_count)
+	instantiate_initial_wedge()
+	instantiate_wedges(wedge_count - 1)
 	
 	camera_spatial.position = wedges[wedge_count/2].global_position
 	initial_cam_rot = camera_spatial.rotation
@@ -34,6 +37,11 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
+
+
+func _physics_process(delta):
+	if cam_following:
+		camera_spatial.set_position(get_center())
 
 
 func _input(event):
@@ -49,7 +57,7 @@ func _input(event):
 		reset_cam()
 	
 	if event is InputEventMouseMotion:
-		if cam_panning:
+		if cam_panning and not cam_following:
 			var mvmt = Vector3(-event.relative.x, event.relative.y, 0.0) * pan_sensitivity * SENS_MULTI
 			camera_spatial.translate(mvmt)
 		elif cam_rotating:
@@ -58,35 +66,57 @@ func _input(event):
 			camera_spatial.rotation.x = clamp(camera_spatial.rotation.x, -PI/2.0, PI/2.0)
 
 
+func instantiate_initial_wedge():
+	var scene = preload("res://Wedge.tscn")
+	var wedge = scene.instantiate()
+	add_child(wedge)
+	wedges.append(wedge)
+	wedge.index = 0
+	last_wedge = wedge
+	wedge.rot_speed = rotation_speed
+	wedge.connect("wedge_rotate", _on_wedge_rotate)
+	wedge.set_color(Globals.WedgeColor.WHITE)
+
+
 func instantiate_wedges(n):
-	var previous_wedge
-	var pos = Vector3(-1, 0, 0)
-	
+	var offset = Vector3(-1, 0, 0)
 	for i in range(n):
 		var scene = preload("res://Wedge.tscn")
 		var wedge = scene.instantiate()
+		last_wedge.add_child(wedge)
 		
-		if previous_wedge:
-			previous_wedge.add_child(wedge)
-		else:
-			add_child(wedge)
-		
-		wedge.set_position(pos)
+		wedge.set_position(offset)
 		wedges.append(wedge)
-		
-		wedge.index = i
+		wedge.index = last_wedge.index + 1
 		wedge.rot_speed = rotation_speed
 		wedge.connect("wedge_rotate", _on_wedge_rotate)
+		wedge.rotation_degrees.y = 180.0
+		wedge.rotation_degrees.z = -90.0
 		
-		if i % 2 == 0:
+		if wedge.index % 2 == 0:
 			wedge.set_color(Globals.WedgeColor.WHITE)
 		else:
 			wedge.set_color(Globals.WedgeColor.ORANGE)
 		
-		if previous_wedge:
-			wedge.rotation_degrees.y = 180.0
-			wedge.rotation_degrees.z = -90.0
-		previous_wedge = wedge
+		last_wedge = wedge
+
+
+func set_wedge_count(n):
+	if n == wedge_count:
+		return
+	
+	elif n < wedge_count:
+		wedges[n].queue_free()
+		var kept_wedges = []
+		for i in range(n):
+			kept_wedges.append(wedges[i])
+		wedges = kept_wedges
+		last_wedge = wedges[-1]
+	
+	elif n > wedge_count:
+		instantiate_wedges(n - wedge_count)
+	
+	wedge_count = n
 
 
 func wedge_list():
@@ -96,11 +126,34 @@ func wedge_list():
 	return wedge_turns
 
 
+func get_center():
+	var pos_x = []
+	var pos_y = []
+	var pos_z = []
+	for wedge in wedges:
+		pos_x.append(wedge.global_position.x)
+		pos_y.append(wedge.global_position.y)
+		pos_z.append(wedge.global_position.z)
+		
+	return Vector3(
+		avg(pos_x),
+		avg(pos_y),
+		avg(pos_z)
+	)
+
+func avg(lst):
+	var t = 0.0
+	for x in lst:
+		t += x
+	return t / len(lst)
+
+
 func set_cam_orthogonal(ortho):
 	if ortho:
 		camera.set_orthogonal(10.0, 0.05, 4000.0)
 	else:
 		camera.set_perspective(60.0, 0.05, 4000.0)
+	cam_orthogonal = ortho
 
 
 func zoom_in():
@@ -120,10 +173,39 @@ func zoom_out():
 			camera.translate(camera.basis.z.normalized() * zoom_sensitivity)
 
 func reset_cam():
-	camera_spatial.position = initial_cam_pos
+	if cam_orthogonal:
+		camera.size = 10.0
+	else:
+		camera.position.z = 8.0
+		
 	camera_spatial.rotation = initial_cam_rot
-	camera.position.z = 8.0
+	if not cam_following:
+		camera_spatial.position = initial_cam_pos
+
 
 func _on_wedge_rotate(i, dir: Globals.WedgeRotation):
 	wedges[i].rotate_wedge(dir)
 	print(wedge_list())
+
+
+func _on_reset_cam_button_pressed():
+	reset_cam()
+
+
+func _on_cam_mode_button_item_selected(index):
+	# Perspective mode button index = 0
+	# Orthogonal = 1
+	if index == 0:
+		set_cam_orthogonal(false)
+	elif index == 1:
+		set_cam_orthogonal(true)
+
+
+func _on_cam_follow_button_toggled(button_pressed):
+	cam_following = button_pressed
+
+
+func _on_wedge_count_edit_text_submitted(new_text):
+	var n = int(new_text)
+	if n > 0:
+		set_wedge_count(n)
