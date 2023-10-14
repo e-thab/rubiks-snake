@@ -18,6 +18,7 @@ var zoom_sensitivity = 0.5
 var SENS_MULTI = 0.01	# Pan and rotate need small numbers. This maps the values to a more readable range
 
 var wedges = []
+var selected_wedges = []
 var last_wedge
 
 
@@ -27,8 +28,7 @@ func _ready():
 	camera = $CameraSpatial/Camera3D
 	camera_spatial = $CameraSpatial
 	set_cam_orthogonal(cam_orthogonal)
-	instantiate_initial_wedge()
-	instantiate_wedges(wedge_count - 1)
+	instantiate_wedges(wedge_count)
 	
 	camera_spatial.position = wedges[wedge_count/2].global_position
 	initial_cam_rot = camera_spatial.rotation
@@ -46,7 +46,7 @@ func _physics_process(delta):
 
 
 func _unhandled_input(event):	
-	if event.is_action("cam_pan"):
+	if event.is_action("cam_pan") and not cam_following:
 		cam_panning = event.is_pressed()
 	if event.is_action("cam_rotate"):
 		cam_rotating = event.is_pressed()
@@ -56,6 +56,8 @@ func _unhandled_input(event):
 		zoom_out()
 	if event.is_action("cam_reset"):
 		reset_cam()
+	#if event.is_action("select"):
+		#print('select')
 
 	if event is InputEventMouseMotion:
 		if cam_panning and not cam_following:
@@ -69,35 +71,37 @@ func _unhandled_input(event):
 		#print(event)
 
 
-func instantiate_initial_wedge():
+func instantiate_wedge():
 	var scene = preload("res://Wedge.tscn")
 	var wedge = scene.instantiate()
-	add_child(wedge)
 	wedges.append(wedge)
-	wedge.connect("wedge_rotate", _on_wedge_rotate)
+	#wedge.connect("wedge_rotate", _on_wedge_rotate)
+	wedge.connect("rotate_selection", rotate_selection)
+	wedge.connect("wedge_select", _on_wedge_select)
+	
+	if last_wedge: # If a last wedge already exists
+		last_wedge.add_child(wedge)
+		wedge.set_index_color(last_wedge.index + 1)
+		var offset = Vector3(-1, 0, 0)
+		wedge.set_position(offset)
+		wedge.rotation_degrees.y = 180.0
+		wedge.rotation_degrees.z = -90.0
+	else:
+		add_child(wedge)
+		wedge.set_index_color(0)
+	
 	last_wedge = wedge
 
 
 func instantiate_wedges(n):
-	var offset = Vector3(-1, 0, 0)
 	for i in range(n):
-		var scene = preload("res://Wedge.tscn")
-		var wedge = scene.instantiate()
-		last_wedge.add_child(wedge)
-		
-		wedge.set_position(offset)
-		wedges.append(wedge)
-		wedge.index = last_wedge.index + 1
-		wedge.connect("wedge_rotate", _on_wedge_rotate)
-		wedge.rotation_degrees.y = 180.0
-		wedge.rotation_degrees.z = -90.0
-		
-		if wedge.index % 2 == 0:
-			wedge.set_color(Globals.WedgeColor.WHITE)
-		else:
-			wedge.set_color(Globals.WedgeColor.ORANGE)
-		
-		last_wedge = wedge
+		instantiate_wedge()
+
+
+func rotate_selection(dir: Globals.WedgeRotation):
+	for wedge in selected_wedges:
+		wedge.rotate_wedge(dir)
+	Globals.report_wedge_rotating(true, len(selected_wedges))
 
 
 func set_wedge_count(n):
@@ -112,7 +116,6 @@ func set_wedge_count(n):
 		last_wedge = wedges[-1]
 	elif n > wedge_count:
 		instantiate_wedges(n - wedge_count)
-	
 	wedge_count = n
 
 
@@ -131,7 +134,7 @@ func get_center():
 		pos_x.append(wedge.global_position.x)
 		pos_y.append(wedge.global_position.y)
 		pos_z.append(wedge.global_position.z)
-		
+	
 	return Vector3(
 		avg(pos_x),
 		avg(pos_y),
@@ -180,9 +183,50 @@ func reset_cam():
 		camera_spatial.position = initial_cam_pos
 
 
-func _on_wedge_rotate(i, dir: Globals.WedgeRotation):
-	wedges[i].rotate_wedge(dir)
-	print(wedge_list())
+#func _on_wedge_rotate(i, dir: Globals.WedgeRotation):
+#	wedges[i].rotate_wedge(dir)
+#	#print(wedge_list())
+
+
+func _on_wedge_select(wedge, is_selected):
+	if is_selected and len(selected_wedges) == 0:
+		selected_wedges.append(wedge)
+	elif is_selected:
+		# Keep selected wedges list sorted by wedge index
+		var found = false
+		for i in range(len(selected_wedges)):
+			if wedge.index < selected_wedges[i].index:
+				selected_wedges.insert(i, wedge)
+				found = true
+			if found:
+				break
+		if not found:
+			selected_wedges.append(wedge)
+	else:
+		selected_wedges.erase(wedge)
+	set_selection_indices()
+	#print_selected()
+
+
+func set_selection_indices():
+	# Set all wedge.selection_index values to match their index (or inverse index) in selected_wedges.
+	# This is used to slow down child wedges when rotating multiple at once to sync speed.
+	for wedge in wedges:
+		var i = selected_wedges.find(wedge)
+		wedge.selection_index = i
+		if i > -1:
+			wedge.inv_selection_index = len(selected_wedges)-1 - i
+
+
+func print_selected():
+	var sel = []
+	for wedge in selected_wedges:
+		sel.append(wedge.index)
+	var ind = []
+	for wedge in wedges:
+		ind.append(wedge.selection_index)
+	print('selected: ', sel)
+	print('selection indices: ', ind)
 
 
 func _on_reset_cam_button_pressed():

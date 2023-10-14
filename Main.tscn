@@ -124,6 +124,7 @@ layout_mode = 2
 
 [node name="CameraHeader" type="Label" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "Camera"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -169,6 +170,36 @@ text = "Reset Camera"
 [node name="HSeparator3" type="HSeparator" parent="UI/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
+[node name="ControlsHeader" type="Label" parent="UI/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Input"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CtrlModeContainer2" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer/CtrlModeContainer2"]
+layout_mode = 2
+text = "Control Mode"
+vertical_alignment = 1
+
+[node name="CtrlModeButton" type="OptionButton" parent="UI/MarginContainer/VBoxContainer/CtrlModeContainer2"]
+layout_mode = 2
+alignment = 1
+item_count = 2
+selected = 0
+popup/item_0/text = "Select"
+popup/item_0/id = 0
+popup/item_1/text = "Hover"
+popup/item_1/id = 1
+
+[node name="HSeparator4" type="HSeparator" parent="UI/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
 [connection signal="text_changed" from="UI/MarginContainer/VBoxContainer/WedgeCountContainer/WedgeCountEdit" to="UI" method="_on_wedge_count_edit_text_changed"]
 [connection signal="text_submitted" from="UI/MarginContainer/VBoxContainer/WedgeCountContainer/WedgeCountEdit" to="." method="_on_wedge_count_edit_text_submitted"]
 [connection signal="toggled" from="UI/MarginContainer/VBoxContainer/AnimationContainer/AnimateButton" to="." method="_on_animate_button_toggled"]
@@ -178,3 +209,4 @@ layout_mode = 2
 [connection signal="toggled" from="UI/MarginContainer/VBoxContainer/FollowContainer/CamFollowButton" to="." method="_on_cam_follow_button_toggled"]
 [connection signal="item_selected" from="UI/MarginContainer/VBoxContainer/CamModeContainer/CamModeButton" to="." method="_on_cam_mode_button_item_selected"]
 [connection signal="pressed" from="UI/MarginContainer/VBoxContainer/ResetCamButton" to="." method="_on_reset_cam_button_pressed"]
+[connection signal="item_selected" from="UI/MarginContainer/VBoxContainer/CtrlModeContainer2/CtrlModeButton" to="UI" method="_on_ctrl_mode_button_item_selected"]

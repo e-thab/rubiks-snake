@@ -57,3 +57,12 @@ func _on_animate_button_toggled(button_pressed):
 		rot_speed_container.modulate = Color.WHITE
 	else:
 		rot_speed_container.modulate = Color.DIM_GRAY
+
+
+func _on_ctrl_mode_button_item_selected(index):
+	if index == 0:
+		Globals.select_mode = true
+		Globals.hover_mode = false
+	else:
+		Globals.select_mode = false
+		Globals.hover_mode = true
